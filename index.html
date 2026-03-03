@@ -384,13 +384,15 @@ function showAddSheet(){
    API FETCH
 ═══════════════════════════════════ */
 async function apiFetch(url, action, body=null){
-  const fullUrl = url+'?action='+action;
+  const fullUrl = url+'?action='+action+'&t='+Date.now(); // cache bust
   const opts = body
-    ? {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,...body})}
-    : {method:'GET'};
+    ? {method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action,...body})}
+    : {method:'GET',redirect:'follow'};
   const res = await fetch(fullUrl, opts);
   if(!res.ok) throw new Error('HTTP '+res.status);
-  return res.json();
+  const text = await res.text();
+  try{ return JSON.parse(text); }
+  catch(e){ throw new Error('응답 파싱 오류: '+text.slice(0,80)); }
 }
 
 function activeSheet(){ return sheets.find(s=>s.id===activeId)||null; }
@@ -558,7 +560,8 @@ function renderStudy(){
   const s=sh();
   if(!s){document.getElementById('c-study').innerHTML=emptyNoFile();return;}
   const ex=exprs();
-  const tags=[...new Set(ex.map(e=>e.tag).filter(Boolean))];
+  // chapter 기준 필터
+  const chapters=[...new Set(cards().map(c=>c.chapter).filter(Boolean))].sort();
 
   let html=`<div class="file-title-wrap">
     <input class="file-title" value="${esc(s.name)}" title="클릭해서 제목 수정"
@@ -568,14 +571,15 @@ function renderStudy(){
     <span class="title-hint">✏️ 클릭해서 수정</span>
   </div>`;
 
-  if(tags.length>1){
+  if(chapters.length>0){
     html+=`<div class="tag-filter">
       <button class="tag-btn ${activeTag==='all'?'active':''}" onclick="setTag('all')">전체</button>
-      ${tags.map(t=>`<button class="tag-btn ${activeTag===t?'active':''}" onclick="setTag(${JSON.stringify(t)})">${esc(t)}</button>`).join('')}
+      ${chapters.map(c=>`<button class="tag-btn ${activeTag===c?'active':''}" onclick="setTag(${JSON.stringify(c)})">${esc(c)}</button>`).join('')}
     </div>`;
   }
 
-  const list=activeTag==='all'?ex:ex.filter(e=>e.tag===activeTag);
+  // chapter 기준으로 표현 필터링
+  const list=activeTag==='all'?ex:ex.filter(e=>e.chapter===activeTag);
   if(!list.length){
     html+=`<div class="empty-state"><div class="e-icon">📭</div><p>표현 카드가 없어요.<br>구글 시트 <code>cards</code> 탭에 <code>type=expr</code> 행을 추가해주세요.</p></div>`;
     document.getElementById('c-study').innerHTML=html;return;
@@ -592,7 +596,7 @@ function renderStudy(){
       <div class="expr-card-head" onclick="toggleExpr('${expr.id}')">
         <span class="expr-en">${esc(expr.en)}</span>
         <span class="expr-ko">${esc(expr.ko)}</span>
-        ${expr.tag?`<span class="expr-tag-pill">${esc(expr.tag)}</span>`:''}
+        ${expr.chapter?`<span class="expr-tag-pill">${esc(expr.chapter)}</span>`:''}
         ${total?`<span class="expr-prog" id="ep_${expr.id}">${checked}/${total}</span>`:''}
         <span class="expr-chev">▼</span>
       </div>
