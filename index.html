@@ -722,7 +722,7 @@ function renderTest(){
     </div></div>
     <div class="test-card">
       <span class="t-badge">한국어 → 영어</span>
-      ${s.tag?`<span class="t-tag">${esc(s.tag)}</span>`:''}
+      ${s.chapter?`<span class="t-tag">${esc(s.chapter)}</span>`:''}
       <div class="test-q">${esc(s.ko)}</div>
       <div class="test-hint" onclick="toggleHint(this)" title="클릭하면 힌트 보기">💡 <span class="hint-placeholder">힌트 보기</span><span class="hint-val"><strong>${esc(s.tag||'—')}</strong></span></div>
       <button class="reveal-btn" onclick="revealAns()">정답 확인 →</button>
