@@ -150,8 +150,13 @@ body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;font
 .t-badge{position:absolute;top:16px;right:16px;font-size:.7rem;background:var(--surface2);color:var(--text3);padding:3px 11px;border-radius:10px;}
 .t-tag{position:absolute;top:16px;left:16px;font-size:.7rem;background:var(--accent-l);color:var(--accent);padding:3px 11px;border-radius:10px;font-family:'JetBrains Mono',monospace;font-weight:500;}
 .test-q{font-size:1.3rem;color:var(--text);line-height:1.7;max-width:580px;font-weight:500;}
-.test-hint{font-size:.8rem;color:var(--text3);background:var(--surface2);padding:5px 14px;border-radius:20px;}
+.test-hint{font-size:.8rem;color:var(--text3);background:var(--surface2);padding:5px 14px;border-radius:20px;cursor:pointer;user-select:none;transition:all .18s;}
+.test-hint:hover{background:var(--border);}
 .test-hint strong{color:var(--blue);}
+.hint-val{display:none;}
+.hint-val.show{display:inline;}
+.hint-placeholder{display:inline;}
+.hint-placeholder.hide{display:none;}
 .reveal-btn{background:var(--accent);border:none;color:#fff;border-radius:10px;padding:13px 36px;font-family:'Nunito',sans-serif;font-size:.92rem;font-weight:700;cursor:pointer;transition:all .18s;margin-top:4px;}
 .reveal-btn:hover{background:#2e5c40;transform:translateY(-1px);box-shadow:0 4px 12px rgba(61,107,79,.25);}
 .ans-box{display:none;background:var(--surface2);border-radius:12px;padding:20px 24px;width:100%;max-width:580px;text-align:left;border-left:3px solid var(--accent);}
@@ -719,7 +724,7 @@ function renderTest(){
       <span class="t-badge">한국어 → 영어</span>
       ${s.tag?`<span class="t-tag">${esc(s.tag)}</span>`:''}
       <div class="test-q">${esc(s.ko)}</div>
-      <div class="test-hint">힌트: <strong>${esc(s.tag||'—')}</strong></div>
+      <div class="test-hint" onclick="toggleHint(this)" title="클릭하면 힌트 보기">💡 <span class="hint-placeholder">힌트 보기</span><span class="hint-val"><strong>${esc(s.tag||'—')}</strong></span></div>
       <button class="reveal-btn" onclick="revealAns()">정답 확인 →</button>
       <div class="ans-box" id="ans-box">
         <div class="ans-en">${esc(s.en)}</div>
@@ -732,6 +737,10 @@ function renderTest(){
         <button class="r-btn r-easy" onclick="rate('easy')">쉬움<span class="r-hint">바로 나왔어</span></button>
       </div>
     </div>`;
+}
+function toggleHint(el){
+  el.querySelector('.hint-val').classList.toggle('show');
+  el.querySelector('.hint-placeholder').classList.toggle('hide');
 }
 function revealAns(){
   document.getElementById('ans-box').classList.add('show');
